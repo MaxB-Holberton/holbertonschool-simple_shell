@@ -25,7 +25,7 @@ char **create_argv(char *input)
 		return (NULL);
 	}
 
-	argv[0] = token
+	argv[0] = token;
 	argv[1] = NULL;
 	return argv;
 }
@@ -42,7 +42,6 @@ int main (void)
 	int line = 0;
 	char **argv;
 	int status;
-
 	pid_t new_process;
 
 	while (1)
