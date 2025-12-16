@@ -64,14 +64,14 @@ int main (void)
 		new_process = fork();
 		if (new_process == -1)
 		{
-			perror("ERROR: ");
+			perror("ERROR");
 			free(argv);
 			continue;
 		}
 		if (new_process == 0)
 		{
 			execve(argv[0], argv, environ);
-			perror("ERROR: ");
+			perror("ERROR");
 			exit(1);
 		}
 		else
