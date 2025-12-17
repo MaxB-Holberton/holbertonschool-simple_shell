@@ -53,7 +53,8 @@ int main (void)
 		line = getline(&input_line, &input_len, stdin);
 		if (line == -1)
 		{
-			printf("\n");
+			if (isatty(STDIN_FILENO))
+				printf("\n");
 			break;
 		}
 
