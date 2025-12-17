@@ -31,6 +31,30 @@ char **create_argv(char *input)
 }
 
 /**
+ * trim_spaces - deals with trailing and leading spaces
+ * @str: pointer to string
+ * Return: string on success
+ */
+char *trim_spaces(char *str)
+{
+	char *end;
+
+	while (*str == ' ')
+		str++;
+
+	if (str == '\0')
+		return (str);
+
+	end = str + strlen(str) - 1;
+	while (end > str && *end == ' ')
+		end--;
+
+	end[1] = '\0';
+
+	return (str);
+}
+
+/**
  * main - the main function, starts the shell process
  *
  * Return: 0 on success
