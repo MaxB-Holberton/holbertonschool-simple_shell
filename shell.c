@@ -12,6 +12,7 @@ char **create_argv(char *input)
 {
 	char *token;
 	char **argv;
+	char **tmp;
 	size_t argc = 0, size = 8;
 
 	if (input == NULL)
