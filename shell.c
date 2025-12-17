@@ -31,7 +31,7 @@ char **create_argv(char *input)
 		if (argc >= size)
 		{
 			size *= 2;
-			**tmp = realloc(argv, sizeof(char *) * size);
+			tmp = realloc(argv, sizeof(char *) * size);
 			if (!tmp)
 			{
 				free (argv);
