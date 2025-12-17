@@ -14,7 +14,6 @@ char **create_argv(char *input)
 	char *token;
 	char **argv;
 	size_t argc = 0, size = 8;
-	char **tmp;
 
 	if (input == NULL)
 		return (NULL);
@@ -31,7 +30,7 @@ char **create_argv(char *input)
 		if (argc >= size)
 		{
 			size *= 2;
-			tmp = realloc(argv, sizeof(char *) * size);
+			char** tmp = (char **)realloc(argv, sizeof(char *) * size);
 			if (!tmp)
 			{
 				free (argv);
@@ -100,12 +99,12 @@ int main (void)
 			break;
 		}
 
-		char *trimmed = trim_spaces(input_line);
-		if (*trimmed == '\0')
+		trimmed = trim_spaces(input_line);
+		if (trimmed == '\0')
 			continue;
 
-		char **argv = create_argv(trimmed);
-		if (!argv)
+		argv = create_argv(trimmed);
+		if (argv)
 			continue;
 
 		new_process = fork();
@@ -119,6 +118,7 @@ int main (void)
 		{
 			execve(argv[0], argv, environ);
 			perror("ERROR");
+			free(argv);
 			exit(1);
 		}
 		else
