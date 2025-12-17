@@ -13,40 +13,56 @@ char **create_argv(char *input)
 {
 	char *token;
 	char **argv;
+	size_t argc = 0, size = 8;
 
-	argv = malloc(sizeof(char *) * 2);
-	if (argv == NULL)
+	if (input == NULL)
 		return (NULL);
 
-	token = strtok(input, "\n");
-	if (token == NULL)
+	argv = malloc(sizeof(char *) * size);
+	if (!argv)
+		return (NULL);
+
+	token = strtok(input, " \t\n");
+	while (token)
 	{
-		free(argv);
-		return (NULL);
+		argv[argc++] = token;
+
+		if (argc >= size)
+		{
+			size *= 2;
+			char **tmp = realloc(argv, sizeof(char *) * size);
+			if (!tmp)
+			{
+				free (argv);
+				return (NULL);
+			}
+			argv = tmp;
+		}
+		token = strtok(NULL, " \t\n");
 	}
 
-	argv[0] = token;
-	argv[1] = NULL;
+	argv[argc] = NULL;
 	return argv;
 }
 
 /**
- * trim_spaces - deals with trailing and leading spaces
- * @str: pointer to string
- * Return: string on success
+ * trim_spaces - removes leading and trailing spaces from a string
+ * @str: input string
+ *
+ * Return: pointer to trimmed string
  */
 char *trim_spaces(char *str)
 {
 	char *end;
 
-	while (*str == ' ')
+	while (*str == ' ' || *str == '\t')
 		str++;
 
 	if (*str == '\0')
 		return (str);
 
 	end = str + strlen(str) - 1;
-	while (end > str && *end == ' ')
+	while (end > str && (*end == ' ' || *end == '\t' || *end == '\n'))
 		end--;
 
 	end[1] = '\0';
@@ -63,8 +79,7 @@ int main (void)
 {
 	char *input_line = NULL;
 	size_t input_len = 0;
-	int line = 0;
-	char **argv;
+	ssize_t line_len;
 	int status;
 	pid_t new_process;
 
@@ -82,11 +97,13 @@ int main (void)
 			break;
 		}
 
-		argv = create_argv(input_line);
-		if (argv == NULL)
-		{
+		char *trimmed = trim_spaces(input_line);
+		if (*trimmed == '\0')
 			continue;
-		}
+
+		char **argv = create_argv(trimmed);
+		if (!arg)
+			continue;
 
 		new_process = fork();
 		if (new_process == -1)
