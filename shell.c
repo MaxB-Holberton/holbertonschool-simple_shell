@@ -42,7 +42,7 @@ char *trim_spaces(char *str)
 	while (*str == ' ')
 		str++;
 
-	if (str == '\0')
+	if (*str == '\0')
 		return (str);
 
 	end = str + strlen(str) - 1;
