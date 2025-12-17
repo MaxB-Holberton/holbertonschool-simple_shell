@@ -7,7 +7,6 @@ extern char **environ;
  * @input: the shell input to break down
  *
  * Return: pointer to a pointer of strings (argv)
- *
  */
 char **create_argv(char *input)
 {
@@ -18,7 +17,7 @@ char **create_argv(char *input)
 	if (input == NULL)
 		return (NULL);
 
-	argv = malloc(sizeof(char *) * size);
+	argv = (char **)malloc(sizeof(char *) * size);
 	if (!argv)
 		return (NULL);
 
@@ -30,7 +29,7 @@ char **create_argv(char *input)
 		if (argc >= size)
 		{
 			size *= 2;
-			char** tmp = (char **)realloc(argv, sizeof(char *) * size);
+			tmp = (char **)realloc(argv, sizeof(char *) * size);
 			if (!tmp)
 			{
 				free (argv);
@@ -100,7 +99,7 @@ int main (void)
 		}
 
 		trimmed = trim_spaces(input_line);
-		if (trimmed == '\0')
+		if (trimmed == NULL || *trimmed == '\0')
 			continue;
 
 		argv = create_argv(trimmed);
