@@ -14,6 +14,7 @@ char **create_argv(char *input)
 	char *token;
 	char **argv;
 	size_t argc = 0, size = 8;
+	char **tmp;
 
 	if (input == NULL)
 		return (NULL);
@@ -30,7 +31,7 @@ char **create_argv(char *input)
 		if (argc >= size)
 		{
 			size *= 2;
-			char **tmp = realloc(argv, sizeof(char *) * size);
+			**tmp = realloc(argv, sizeof(char *) * size);
 			if (!tmp)
 			{
 				free (argv);
@@ -82,6 +83,8 @@ int main (void)
 	ssize_t line_len;
 	int status;
 	pid_t new_process;
+	char **argv;
+	char *trimmed;
 
 	while (1)
 	{
@@ -89,8 +92,8 @@ int main (void)
 			printf("[H_Shell] $ ");
 		/* will stop it from printing [H_Shell] $ to output */
 
-		line = getline(&input_line, &input_len, stdin);
-		if (line == -1)
+		line_len = getline(&input_line, &input_len, stdin);
+		if (line_len == -1)
 		{
 			if (isatty(STDIN_FILENO))
 				printf("\n");
@@ -102,7 +105,7 @@ int main (void)
 			continue;
 
 		char **argv = create_argv(trimmed);
-		if (!arg)
+		if (!argv)
 			continue;
 
 		new_process = fork();
