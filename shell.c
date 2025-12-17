@@ -46,7 +46,9 @@ int main (void)
 
 	while (1)
 	{
-		printf("[H_Shell] $ ");
+		if (isatty(STDIN_FILENO)) /* checks if open file refers to terminal */
+			printf("[H_Shell] $ ");
+		/* will stop it from printing [H_Shell] $ to output */
 
 		line = getline(&input_line, &input_len, stdin);
 		if (line == -1)
