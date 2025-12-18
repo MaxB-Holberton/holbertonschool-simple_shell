@@ -101,10 +101,11 @@ int main (void)
 
 		trimmed = trim_spaces(input_line);
 		if (trimmed == NULL || *trimmed == '\0')
+			free(input_line);
 			continue;
 
 		argv = create_argv(trimmed);
-		if (argv)
+		if (!argv)
 			continue;
 
 		new_process = fork();
