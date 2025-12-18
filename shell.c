@@ -84,6 +84,7 @@ int main (void)
 	pid_t new_process;
 	char **argv;
 	char *trimmed;
+	char *input_copy
 
 	while (1)
 	{
@@ -107,7 +108,7 @@ int main (void)
 		if (!input_copy)
 			continue;
 
-		argv = create_argv(trimmed);
+		argv = create_argv(input_copy);
 		if (!argv)
 		{
 			free(input_copy);
