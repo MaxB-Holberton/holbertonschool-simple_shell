@@ -111,6 +111,7 @@ int main (void)
 		argv = create_argv(input_copy);
 		if (!argv || argv[0] == NULL)
 		{
+			free(argv);
 			free(input_copy);
 			continue;
 		}
