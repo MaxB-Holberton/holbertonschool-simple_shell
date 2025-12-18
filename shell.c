@@ -23,7 +23,7 @@ char **create_argv(char *input)
 		return (NULL);
 
 	token = strtok(input, " \t\n");
-	while (token)
+	while (token != NULL)
 	{
 		argv[argc++] = token;
 
@@ -65,7 +65,7 @@ char *trim_spaces(char *str)
 	while (end > str && (*end == ' ' || *end == '\t' || *end == '\n'))
 		end--;
 
-	end[1] = '\0';
+	*(end + 1) = '\0';
 
 	return (str);
 }
@@ -100,19 +100,26 @@ int main (void)
 		}
 
 		trimmed = trim_spaces(input_line);
-		if (trimmed == NULL || *trimmed == '\0')
-			free(input_line);
+		if (*trimmed == '\0')
+			continue;
+
+		input_copy = strdup(trimmed);
+		if (!input_copy)
 			continue;
 
 		argv = create_argv(trimmed);
 		if (!argv)
+		{
+			free(input_copy);
 			continue;
+		}
 
 		new_process = fork();
 		if (new_process == -1)
 		{
 			perror("ERROR");
 			free(argv);
+			free(input_copy);
 			continue;
 		}
 		if (new_process == 0)
@@ -120,12 +127,14 @@ int main (void)
 			execve(argv[0], argv, environ);
 			perror("ERROR");
 			free(argv);
+			free(input_copy);
 			exit(1);
 		}
 		else
 		{
 			wait(&status);
 			free(argv);
+			free(input_copy);
 		}
 	}
 	free(input_line);
