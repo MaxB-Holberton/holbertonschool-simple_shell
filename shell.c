@@ -109,7 +109,7 @@ int main (void)
 			continue;
 
 		argv = create_argv(input_copy);
-		if (!argv)
+		if (!argv || argv[0] == NULL)
 		{
 			free(input_copy);
 			continue;
