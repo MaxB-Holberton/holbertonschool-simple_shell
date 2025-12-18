@@ -84,7 +84,7 @@ int main (void)
 	pid_t new_process;
 	char **argv;
 	char *trimmed;
-	char *input_copy
+	char *input_copy;
 
 	while (1)
 	{
