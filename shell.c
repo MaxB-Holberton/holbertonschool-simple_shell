@@ -1,73 +1,33 @@
 #include "shell.h"
 
-extern char **environ;
-
 /**
- * create_argv - create argv to pass to execve
- * @input: the shell input to break down
+ * create_process - checks PATH and create a new process
+ * @argv: the list of commands to execute
  *
- * Return: pointer to a pointer of strings (argv)
+ * Return: 0 on success | 1 if execve fails
  */
-char **create_argv(char *input)
+int create_process(char **argv)
 {
-	char *token;
-	char **argv;
-	char **tmp;
-	size_t argc = 0, size = 8;
+	pid_t new_process;
+	int status;
 
-	if (input == NULL)
-		return (NULL);
-
-	argv = (char **)malloc(sizeof(char *) * size);
-	if (!argv)
-		return (NULL);
-
-	token = strtok(input, " \t\n");
-	while (token != NULL)
+	/*
+	 * TODO: check to see if file requested is in PATH
+	 * Success: Fork process and run
+	 * Failure: Return 0;
+	 */
+	new_process = fork();
+	if (new_process > 0)
 	{
-		argv[argc++] = token;
-
-		if (argc >= size)
-		{
-			size *= 2;
-			tmp = (char **)realloc(argv, sizeof(char *) * size);
-			if (!tmp)
-			{
-				free (argv);
-				return (NULL);
-			}
-			argv = tmp;
-		}
-		token = strtok(NULL, " \t\n");
+		wait(&status);
+		free(argv);
+		return (0);
 	}
-
-	argv[argc] = NULL;
-	return argv;
-}
-
-/**
- * trim_spaces - removes leading and trailing spaces from a string
- * @str: input string
- *
- * Return: pointer to trimmed string
- */
-char *trim_spaces(char *str)
-{
-	char *end;
-
-	while (*str == ' ' || *str == '\t')
-		str++;
-
-	if (*str == '\0')
-		return (str);
-
-	end = str + strlen(str) - 1;
-	while (end > str && (*end == ' ' || *end == '\t' || *end == '\n'))
-		end--;
-
-	*(end + 1) = '\0';
-
-	return (str);
+	if (new_process == 0)
+	{
+		execve(argv[0], argv, NULL);
+	}
+	return (1);
 }
 
 /**
@@ -75,68 +35,51 @@ char *trim_spaces(char *str)
  *
  * Return: 0 on success
  */
-int main (void)
+int main(void)
 {
 	char *input_line = NULL;
 	size_t input_len = 0;
 	ssize_t line_len;
-	int status;
-	pid_t new_process;
 	char **argv;
-	char *trimmed;
-	char *input_copy;
 
 	while (1)
 	{
-		if (isatty(STDIN_FILENO)) /* checks if open file refers to terminal */
-			printf("[H_Shell] $ ");
-		/* will stop it from printing [H_Shell] $ to output */
-
+		if (!isatty(STDIN_FILENO))
+		{
+			/* if the file descriptor is not stdin */
+			perror("ERROR: not reading STDIN");
+			return (1);
+		}
+		/*
+		 * TODO: create return variable for create_env_list
+		 */
+		create_env_list("PATH");
+		printf("[H_Shell]$ ");
 		line_len = getline(&input_line, &input_len, stdin);
 		if (line_len == -1)
 		{
-			if (isatty(STDIN_FILENO))
-				printf("\n");
+			/* EoF reached */
+			printf("\n");
 			break;
 		}
-
-		trimmed = trim_spaces(input_line);
-		if (*trimmed == '\0')
-			continue;
-
-		input_copy = strdup(trimmed);
-		if (!input_copy)
-			continue;
-
-		argv = create_argv(input_copy);
-		if (!argv || argv[0] == NULL)
+		/* trim the string and then create argv */
+		argv = create_argv(trim_string(input_line, line_len));
+		if (argv == NULL)
 		{
-			free(argv);
-			free(input_copy);
+			continue;
+		}
+		if (argv[0] == NULL)
+		{
 			continue;
 		}
 
-		new_process = fork();
-		if (new_process == -1)
+		if (create_process(argv) == 1)
 		{
+			/* If child fails to execute */
 			perror("ERROR");
 			free(argv);
-			free(input_copy);
-			continue;
-		}
-		if (new_process == 0)
-		{
-			execve(argv[0], argv, environ);
-			perror("ERROR");
-			free(argv);
-			free(input_copy);
-			exit(1);
-		}
-		else
-		{
-			wait(&status);
-			free(argv);
-			free(input_copy);
+			free(input_line);
+			return (1);
 		}
 	}
 	free(input_line);
