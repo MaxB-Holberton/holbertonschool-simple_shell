@@ -37,9 +37,9 @@ size_t get_num_paths(char *env)
 	size_t j = 0;
 	size_t i = 1; /* minimum # paths will be 1 */
 
-	for (j = 0; input[j] != '\0'; j++)
+	for (j = 0; env[j] != '\0'; j++)
 	{
-		if(input[j] == ':')
+		if(env[j] == ':')
 			i++;
 	}
 
@@ -47,23 +47,35 @@ size_t get_num_paths(char *env)
 }
 
 /**
- * create_env_list - create a linked list from
+ * create_env_list - create a list from the PATH enviroment variables
  * @name: the name to create a list from
  *
  * Return: pointer to the list
  */
-char *create_env_list(char *name)
+char **create_env_list(char *name)
 {
 	char *env;
+	char *token;
 	char **list;
-	size_t paths;
+	size_t path_num = 0;
+	size_t i = 0;
 
 	env = _getenv_var(name);
-	paths = get_num_paths(env);
+	path_num = get_num_paths(env);
+	list = (char **)malloc(sizeof(char *) * (path_num));
+
+	token = strtok(env, ":");
+	while (token)
+	{
+		list[i++] = token;
+		token = strtok(NULL, ":");
+	}
 	/*
-	 * TODO: create a list
-	 * each list item is the path seperated by ":"
-	 * return the list back
+	 * TODO: REMOVE PATH= from the list[0]
+	 * list[0] will be PATH=/home/<username>
+	 * which will cause an erro
 	 */
+	list[path_num - 1] = NULL;
+	return (list);
 
 }
