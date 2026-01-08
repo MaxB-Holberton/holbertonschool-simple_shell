@@ -36,6 +36,7 @@ int check_path(char **argv, char **env_list)
 {
 	size_t i = 0;
 	size_t len = 0;
+	size_t argv_0_len = 0;
 	char *full_path;
 	int rtn = 0;
 
@@ -49,13 +50,14 @@ int check_path(char **argv, char **env_list)
 		{
 			return(new_fork(argv));
 		}
+		printf("ERROR: %s not found\n", argv[0]);
 		return (0);
 	}
-
+	argv_0_len = strlen(argv[0]) + 1;
 	/* searching in PATH */
 	for (i = 0; env_list[i] != NULL; i++)
 	{
-		len = strlen(env_list[i]) + strlen(argv[0]) + 1;
+		len = strlen(env_list[i]) + argv_0_len;
 		full_path = malloc(len);
 		if (!full_path)
 			return (1);
@@ -68,11 +70,15 @@ int check_path(char **argv, char **env_list)
 			/*free(argv[0]);*/
 			argv[0] = full_path;
 			rtn = new_fork(argv);
-			break;
+			free(full_path);
+			full_path = NULL;
+			return(rtn);
 		}
+		free(full_path);
 	}
 	free(full_path);
-	return (rtn);
+	printf("ERROR: %s not found\n", argv[0]);
+	return (0);
 }
 
 /**
