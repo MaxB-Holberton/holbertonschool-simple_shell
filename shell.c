@@ -14,16 +14,22 @@ int new_fork(char **argv)
 	int status;
 
 	new_process = fork();
-	if (new_process > 0)
+	if (new_process == -1)
 	{
-		wait(&status);
-		free(argv);
-		return (0);
+		return (1);
 	}
 	if (new_process == 0)
 	{
 		execve(argv[0], argv, environ);
-		/* should only return on failed called */
+		perror("ERROR - failed child");
+		return (1);
+		/* should only return on failed call */
+	}
+	else
+	{
+		wait(&status);
+		free(argv);
+		return (0);
 	}
 	return (1);
 }
@@ -41,6 +47,7 @@ int check_path(char **argv, char **env_list)
 	size_t len = 0;
 	size_t argv_0_len = 0;
 	char *full_path;
+	char *argv_0_dup;
 	int rtn = 0;
 
 	/*
@@ -70,16 +77,15 @@ int check_path(char **argv, char **env_list)
 		strcat(full_path, argv[0]);
 		if (access(full_path, X_OK) == 0)
 		{
-			/*free(argv[0]);*/
 			argv[0] = full_path;
 			rtn = new_fork(argv);
 			free(full_path);
 			full_path = NULL;
 			return(rtn);
 		}
-		free(full_path);
 	}
 	free(full_path);
+	full_path = NULL;
 	printf("ERROR: %s not found\n", argv[0]);
 	return (0);
 }
@@ -101,15 +107,10 @@ int main(void)
 	env_list = create_env_list("PATH", environ);
 	while (1)
 	{
-		/*
-		 * this is causing issues with non-interactive mode
-		if (!isatty(STDIN_FILENO))
+		if (isatty(STDIN_FILENO))
 		{
-			if the file descriptor is not stdin
-			perror("ERROR: not reading STDIN");
-			return (1);
-		}*/
-		printf("[H_Shell]$ ");
+			printf("[H_Shell]$ ");
+		}
 		line_len = getline(&input_line, &input_len, stdin);
 		if (line_len == -1)
 		{
@@ -131,7 +132,7 @@ int main(void)
 		if (process_status == 1)
 		{
 			/* If child fails to execute */
-			perror("ERROR - failed child");
+			perror("ERROR");
 			free(argv);
 			free(input_line);
 			free(env_list);
