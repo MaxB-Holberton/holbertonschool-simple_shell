@@ -5,9 +5,9 @@
  * @argv: the arguments
  * @env_list: the path list
  *
- * Return: 0 on success or -1 on failure
+ * Return: 0 on success or 1 on failure
  */
-int check_path(char **argv __attribute__((unused)), char **env_list)
+int check_path(char **argv, char **env_list)
 {
 	size_t i = 0;
 	size_t len;
@@ -18,30 +18,29 @@ int check_path(char **argv __attribute__((unused)), char **env_list)
 	{
 		if (access(argv[0], X_OK) == 0)
 			return (0);
-		return (-1);
+		return (1);
 	}
 
 	/* searching in PATH */
 	for (i = 0; env_list[i] != NULL; i++)
 	{
-		len = strlen(env_list[i]) + strlen(argv[0]) + 2;
+		len = strlen(env_list[i]) + strlen(argv[0]) + 1;
 		full_path = malloc(len);
 		if (!full_path)
-			return (-1);
+			return (1);
 
 		strcpy(full_path, env_list[i]);
 		strcat(full_path, "/");
 		strcat(full_path, argv[0]);
-
 		if (access(full_path, X_OK) == 0)
 		{
-			free(argv[0]);
+			/*free(argv[0]);*/
 			argv[0] = full_path;
 			return (0);
 		}
-		free(full_path);
 	}
-	return (-1);
+	free(full_path);
+	return (1);
 }
 
 /**
@@ -55,21 +54,24 @@ int create_process(char **argv, char **env_list)
 	pid_t new_process;
 	int status;
 
-	if (check_path(argv, env_list != 0)
+	if (check_path(argv, env_list) == 1)
+	{
+		printf("ERROR: %s cannot be found\n", argv[0]);
 		return (0);
-
+	}
 	new_process = fork();
-	if (new_process < 0)
-		return (1);
-
+	printf("new process found\n");
+	if (new_process > 0)
+	{
+		wait(&status);
+		free(argv);
+		return (0);
+	}
 	if (new_process == 0)
 	{
-		execve(argv[0], argv, environ);
-		perror("execve");
-		exit(1);
+		execve(argv[0], argv, NULL);
 	}
-	wait(&status);
-	return (0);
+	return (1);
 }
 
 /**
@@ -116,12 +118,14 @@ int main(void)
 		if (create_process(argv, env_list) == 1)
 		{
 			/* If child fails to execute */
-			perror("ERROR");
+			perror("ERROR - failed child");
 			free(argv);
 			free(input_line);
+			free(env_list);
 			return (1);
 		}
 	}
+	free(env_list);
 	free(input_line);
 	return (0);
 }

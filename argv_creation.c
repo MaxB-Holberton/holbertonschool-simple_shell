@@ -32,15 +32,16 @@ char *trim_string(char *input, ssize_t end)
 		end--;
 
 	/* remove whitespace in the middle of the text body */
-	for (; i < end; i++)
+	for (; i <= end; i++)
 	{
-		if (input[i] >= 32 && input[i] < 127)
+		if ((input[i] >= 32) && (input[i] < 127))
 		{
-			if (!(input[i + 1] > 32 && input[i + 1] < 127))
+			if (input[i] == 32 && !((input[i + 1] > 32) && (input[i + 1] < 127)))
 			{
 				continue;
 			}
 			input[j++] = input[i];
+
 		}
 	}
 	input[j] = '\0';

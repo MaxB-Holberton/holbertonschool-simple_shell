@@ -70,11 +70,11 @@ char **create_env_list(char *name)
 		list[i++] = token;
 		token = strtok(NULL, ":");
 	}
-	/*
-	 * TODO: REMOVE PATH= from the list[0]
-	 * list[0] will be PATH=/home/<username>
-	 * which will cause an erro
-	 */
+	while(*list[0] != '=')
+	{
+		list[0]++;
+	}
+	list[0]++;
 	list[path_num - 1] = NULL;
 	return (list);
 
