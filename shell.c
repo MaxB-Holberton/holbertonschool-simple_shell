@@ -25,13 +25,43 @@ int new_fork(char **argv)
 		return (1);
 		/* should only return on failed call */
 	}
-	else
+	waitpid(new_process, &status, 0);
+	return (0);
+}
+
+/**
+ * handle_exit - handles exit built-in
+ * @argv: argv
+ * @input_line: input buffer
+ * @env_list: PATH list
+ *
+ * Return: 1 on exit, 0 otherwise
+ */
+int handle_exit(char **argv, char *input_line, char **env_list)
+{
+	int status = 0;
+	char *end
+
+	if (argv[1])
 	{
-		wait(&status);
-		free(argv);
-		return (0);
+		status = strtol(argv[1], &end, 10);
+		if (*end != '\0')
+		{
+			printf("exit: numeric argument required\n");
+			status = 2;
+		}
+		else if (argv[2])
+		{
+			printf("exit: too many arguments\n");
+			return (0);
+		}
 	}
-	return (1);
+free(argv[0]);
+free(argv);
+free(input_line);
+free(env_list);
+
+exit(status);
 }
 
 /**
@@ -50,8 +80,11 @@ int check_path(char **argv, char **env_list)
 	char *argv_0_dup;
 	int rtn = 0;
 
+	if(!argv || !argv[0])
+		return (0);
+
 	/*
-	 * TODO: add 'exit' & 'env' handling here
+	 * TODO: 'env' handling here
 	 */
 	if (strchr(argv[0], '/') != NULL)
 	{
@@ -118,6 +151,8 @@ int main(void)
 			printf("\n");
 			break;
 		}
+		if (strcmp(argv[0], "exit") == 0) /* exit handling main */
+			handle_exit(argv, input_line, env_list);
 		/* trim the string and then create argv */
 		argv = create_argv(trim_string(input_line, line_len));
 		if (argv == NULL)
@@ -134,10 +169,13 @@ int main(void)
 			/* If child fails to execute */
 			perror("ERROR");
 			free(argv);
+			free(argv[0]);
 			free(input_line);
 			free(env_list);
 			return (1);
 		}
+		free(argv[0]);
+		free(argv);
 	}
 	free(env_list);
 	free(input_line);
