@@ -1,24 +1,55 @@
 #include "shell.h"
 
 /**
- * check_path - check the paths for the execuatable file
- * @argv: the arguments
- * @env_list: the path list
+ * new_fork - checks PATH and create a new process
+ * @argv: the list of commands to execute
  *
- * Return: 0 on success or 1 on failure
+ * Return: 0 - parent return | 1 - execve fails
+ */
+int new_fork(char **argv)
+{
+	pid_t new_process;
+	int status;
+
+	new_process = fork();
+	if (new_process > 0)
+	{
+		wait(&status);
+		free(argv);
+		return (0);
+	}
+	if (new_process == 0)
+	{
+		execve(argv[0], argv, NULL);
+	}
+	return (1);
+}
+
+/**
+ * check_path - checks the Path for the requested exe file
+ * @argv: the list of arguments
+ * @env_list: the PATH env as a list
+ *
+ * Return: 0 if new_fork returns from parent | 1 if new_fork child fails
  */
 int check_path(char **argv, char **env_list)
 {
 	size_t i = 0;
-	size_t len;
+	size_t len = 0;
 	char *full_path;
+	int rtn = 0;
 
-	/* checking if the command already contains a path */
+	/*
+	 * TODO: add 'exit' & 'env' handling here
+	 */
 	if (strchr(argv[0], '/') != NULL)
 	{
+		/* checking if the command already contains a path */
 		if (access(argv[0], X_OK) == 0)
-			return (0);
-		return (1);
+		{
+			return(new_fork(argv));
+		}
+		return (0);
 	}
 
 	/* searching in PATH */
@@ -36,42 +67,12 @@ int check_path(char **argv, char **env_list)
 		{
 			/*free(argv[0]);*/
 			argv[0] = full_path;
-			return (0);
+			rtn = new_fork(argv);
+			break;
 		}
 	}
 	free(full_path);
-	return (1);
-}
-
-/**
- * create_process - checks PATH and create a new process
- * @argv: the list of commands to execute
- *
- * Return: 0 without calling execve | 1 if execve fails
- */
-int create_process(char **argv, char **env_list)
-{
-	pid_t new_process;
-	int status;
-
-	if (check_path(argv, env_list) == 1)
-	{
-		printf("ERROR: %s cannot be found\n", argv[0]);
-		return (0);
-	}
-	new_process = fork();
-	printf("new process found\n");
-	if (new_process > 0)
-	{
-		wait(&status);
-		free(argv);
-		return (0);
-	}
-	if (new_process == 0)
-	{
-		execve(argv[0], argv, NULL);
-	}
-	return (1);
+	return (rtn);
 }
 
 /**
@@ -86,6 +87,7 @@ int main(void)
 	ssize_t line_len;
 	char **argv;
 	char **env_list;
+	int process_status = 0;
 
 	env_list = create_env_list("PATH");
 	while (1)
@@ -114,8 +116,8 @@ int main(void)
 		{
 			continue;
 		}
-
-		if (create_process(argv, env_list) == 1)
+		process_status = check_path(argv, env_list);
+		if (process_status == 1)
 		{
 			/* If child fails to execute */
 			perror("ERROR - failed child");
