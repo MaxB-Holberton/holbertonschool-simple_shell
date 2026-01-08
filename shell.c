@@ -1,5 +1,7 @@
 #include "shell.h"
 
+extern char **environ;
+
 /**
  * new_fork - checks PATH and create a new process
  * @argv: the list of commands to execute
@@ -20,7 +22,8 @@ int new_fork(char **argv)
 	}
 	if (new_process == 0)
 	{
-		execve(argv[0], argv, NULL);
+		execve(argv[0], argv, environ);
+		/* should only return on failed called */
 	}
 	return (1);
 }
@@ -95,15 +98,17 @@ int main(void)
 	char **env_list;
 	int process_status = 0;
 
-	env_list = create_env_list("PATH");
+	env_list = create_env_list("PATH", environ);
 	while (1)
 	{
+		/*
+		 * this is causing issues with non-interactive mode
 		if (!isatty(STDIN_FILENO))
 		{
-			/* if the file descriptor is not stdin */
+			if the file descriptor is not stdin
 			perror("ERROR: not reading STDIN");
 			return (1);
-		}
+		}*/
 		printf("[H_Shell]$ ");
 		line_len = getline(&input_line, &input_len, stdin);
 		if (line_len == -1)

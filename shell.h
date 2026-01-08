@@ -14,7 +14,7 @@
 /* We can also put function in here later if needed too */
 char *trim_string(char *input, ssize_t end);
 char **create_argv(char *input);
-char **create_env_list(char *name);
+char **create_env_list(char *name, char **environ);
 
 
 #endif /* SHELL_H */

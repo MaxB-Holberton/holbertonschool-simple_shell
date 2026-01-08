@@ -1,14 +1,12 @@
 #include "shell.h"
 
-extern char **environ;
-
 /**
  * _getenv_var - get the selected enviroment
  * @name: the name of the env variable to get
  *
  * Return: the env variable or NULL
  */
-char *_getenv_var(char *name)
+char *_getenv_var(char *name, char **environ)
 {
 	int i = 0;
 	int len = 0;
@@ -52,7 +50,7 @@ size_t get_num_paths(char *env)
  *
  * Return: pointer to the list
  */
-char **create_env_list(char *name)
+char **create_env_list(char *name, char **environ)
 {
 	char *env;
 	char *token;
@@ -60,7 +58,7 @@ char **create_env_list(char *name)
 	size_t path_num = 0;
 	size_t i = 0;
 
-	env = _getenv_var(name);
+	env = _getenv_var(name, environ);
 	path_num = get_num_paths(env);
 	list = (char **)malloc(sizeof(char *) * (path_num));
 
