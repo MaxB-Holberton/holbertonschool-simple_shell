@@ -9,36 +9,38 @@
  */
 int check_path(char **argv __attribute__((unused)), char **env_list)
 {
-	/*DIR *dir;
-	struct dirent *current_dir;*/
 	size_t i = 0;
-	/*
-	 * TODO: find the path and insert into argv[0];
-	 * If argv[0] starts with /xxx - goto path and find file instead
-	 * If not starting with /xxx or file at /xxx not found - find it in PATH
-	 * Return 0 if found or -1 if not found
-	 */
-	while(env_list[i] != NULL)
+	size_t len;
+	char *full_path;
+
+	/* checking if the command already contains a path */
+	if (strchr(argv[0], '/') != NULL)
 	{
-		/*dir = opendir(env_list[i]);
-		if (dir == NULL)
-		{
-			printf("this dir not found\n");
-			continue;
-		}*/
-		printf("%s\n", env_list[i]);
-		i++;
-
-		/* read the entry
-		while (current_dir = readdir(dir) != NULL)
-		{
-			if (strcmp(current_dir->d_name, argv[0]) == 0)
-			{
-
-			}
-		}*/
+		if (access(argv[0], X_OK) == 0)
+			return (0);
+		return (-1);
 	}
 
+	/* searching in PATH */
+	for (i = 0; env_list[i] != NULL; i++)
+	{
+		len = strlen(env_list[i]) + strlen(argv[0]) + 2;
+		full_path = malloc(len);
+		if (!full_path)
+			return (-1);
+
+		strcpy(full_path, env_list[i]);
+		strcat(full_path, "/");
+		strcat(full_path, argv[0]);
+
+		if (access(full_path, X_OK) == 0)
+		{
+			free(argv[0]);
+			argv[0] = full_path;
+			return (0);
+		}
+		free(full_path);
+	}
 	return (-1);
 }
 
@@ -53,26 +55,20 @@ int create_process(char **argv, char **env_list)
 	pid_t new_process;
 	int status;
 
-	/*
-	 * TODO: check to see if file requested is in PATH
-	 * Success: Fork process and run
-	 * Failure: Return 0;
-	 */
-	if (check_path(argv, env_list) == 0)
-	{
-		new_process = fork();
-		if (new_process > 0)
-		{
-			wait(&status);
-			free(argv);
-			return (0);
-		}
-		if (new_process == 0)
-		{
-			execve(argv[0], argv, NULL);
-		}
+	if (check_path(argv, env_list != 0)
+		return (0);
+
+	new_process = fork();
+	if (new_process < 0)
 		return (1);
+
+	if (new_process == 0)
+	{
+		execve(argv[0], argv, environ);
+		perror("execve");
+		exit(1);
 	}
+	wait(&status);
 	return (0);
 }
 
