@@ -21,12 +21,14 @@ int new_fork(char **argv)
 	if (new_process == 0)
 	{
 		execve(argv[0], argv, environ);
-		perror("ERROR - failed child");
-		exit(127);
+		perror(argv[0]);
+		_exit(127);
 		/* should only return on failed call */
 	}
 	if (waitpid(new_process, &status, 0) == -1)
 		return (-1);
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
 
 	return (0);
 }
@@ -53,8 +55,10 @@ int check_path(char **argv, char **path_list)
 		{
 			return(new_fork(argv));
 		}
-		return (1);
+		return (new_fork(argv));
 	}
+	if (!path_list || !path_list[0])
+		return (new_fork(argv));
 
 	argv_0_len = strlen(argv[0]) + 2;
 	for (i = 0; path_list[i] != NULL; i++)
@@ -79,7 +83,7 @@ int check_path(char **argv, char **path_list)
 		free(full_path);
 	}
 	full_path = NULL;
-	return (1);
+	return (new_fork(argv));
 }
 /**
  * pre_process - handles reserved argv_0 lines
