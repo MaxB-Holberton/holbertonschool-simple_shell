@@ -74,7 +74,7 @@ int check_path(char **argv, char **path_list)
 			argv[0] = full_path;
 			new_fork(argv);
 			free(full_path);
-			return(rtn);
+			return(0);
 		}
 		free(full_path);
 	}
