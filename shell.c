@@ -21,11 +21,15 @@ int new_fork(char **argv)
 	if (new_process == 0)
 	{
 		execve(argv[0], argv, environ);
-		perror("ERROR - failed child");
-		return (-1);
+		perror(argv[0]);
+		_exit(127);
 		/* should only return on failed call */
 	}
-	waitpid(new_process, &status, 0);
+	if (waitpid(new_process, &status, 0) == -1)
+		return (-1);
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+
 	return (0);
 }
 
@@ -51,20 +55,22 @@ int check_path(char **argv, char **path_list)
 		{
 			return(new_fork(argv));
 		}
-		return (1);
+		return (new_fork(argv));
 	}
+	if (!path_list || !path_list[0])
+		return (1);
 
 	argv_0_len = strlen(argv[0]) + 2;
 	for (i = 0; path_list[i] != NULL; i++)
 	{
 		/* malloc each path_list item w/ argv_0 */
-		len = strlen(path_list[i]) + argv_0_len;
+		len = strlen(path_list[i]) + argv_0_len + 1;
 		full_path = malloc(len);
 		if (!full_path)
 			return (1);
 
 		strcpy(full_path, path_list[i]);
-		strcat(full_path, "/\0");
+		strcat(full_path, "/");
 		strcat(full_path, argv[0]);
 		if (access(full_path, X_OK) == 0)
 		{
@@ -77,7 +83,7 @@ int check_path(char **argv, char **path_list)
 		free(full_path);
 	}
 	full_path = NULL;
-	return (1);
+	return (new_fork(argv));
 }
 /**
  * pre_process - handles reserved argv_0 lines
@@ -123,6 +129,7 @@ int main(void)
 	char **argv;
 	char **path_list;
 	int status = 0;
+	size_t i;
 
 	path_list = create_env_list("PATH", environ);
 	while (1)
@@ -155,16 +162,24 @@ int main(void)
 		}
 		if (status == 1)
 		{
-			printf("ERROR: %s not found\n", argv[0]);
+			fprintf(stderr, "./hsh: 1: %s: not found\n", argv[0]);
+			status = 127;
+			free(argv);
+			break;
 		}
 		free(argv);
 	}
-	free(path_list);
+	if (path_list)
+	{
+		for (i = 0; path_list[i]; i++)
+			free(path_list[i]);
+		free(path_list);
+	}
 	free(input_line);
 	if (status == -1)
 	{
 		perror("ERROR");
 		return (1);
 	}
-	return (0);
+	return (status);
 }
