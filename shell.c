@@ -21,7 +21,6 @@ int new_fork(char **argv)
 	if (new_process == 0)
 	{
 		execve(argv[0], argv, environ);
-		perror(argv[0]);
 		_exit(127);
 		/* should only return on failed call */
 	}
@@ -44,9 +43,7 @@ int check_path(char **argv, char **path_list)
 {
 	size_t i = 0;
 	size_t len = 0;
-	size_t argv_0_len = 0;
 	char *full_path;
-	int rtn = 0;
 
 	if (strchr(argv[0], '/') != NULL)
 	{
@@ -55,16 +52,15 @@ int check_path(char **argv, char **path_list)
 		{
 			return(new_fork(argv));
 		}
-		return (new_fork(argv));
+		return (1);
 	}
 	if (!path_list || !path_list[0])
 		return (1);
 
-	argv_0_len = strlen(argv[0]) + 2;
-	for (i = 0; path_list[i] != NULL; i++)
+	for (i = 0; path_list[i]; i++)
 	{
 		/* malloc each path_list item w/ argv_0 */
-		len = strlen(path_list[i]) + argv_0_len + 1;
+		len = strlen(path_list[i]) + strlen(argv[0]) + 2;
 		full_path = malloc(len);
 		if (!full_path)
 			return (1);
@@ -72,18 +68,17 @@ int check_path(char **argv, char **path_list)
 		strcpy(full_path, path_list[i]);
 		strcat(full_path, "/");
 		strcat(full_path, argv[0]);
+
 		if (access(full_path, X_OK) == 0)
 		{
 			argv[0] = full_path;
-			rtn = new_fork(argv);
+			new_fork(argv);
 			free(full_path);
-			full_path = NULL;
 			return(rtn);
 		}
 		free(full_path);
 	}
-	full_path = NULL;
-	return (new_fork(argv));
+	return (1);
 }
 /**
  * pre_process - handles reserved argv_0 lines
