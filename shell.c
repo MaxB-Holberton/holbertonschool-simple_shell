@@ -97,7 +97,7 @@ int pre_process(char **argv, char** path_list)
 	}
 	if (strcmp(argv[0], "exit") == 0)
 	{
-		return (2);
+		return (-2);
 	}
 	if (strcmp(argv[0], "env") == 0)
 	{
@@ -149,10 +149,11 @@ int main(void)
 			continue;
 		}
 		status = pre_process(argv, path_list);
-		if (status == -1 || status == 2)
+		if (status == -2)
 		{
 			/* if 'exit' or child failed to execve */
 			free(argv);
+			status = 0;
 			break;
 		}
 		if (status == 1)
