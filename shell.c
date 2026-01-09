@@ -124,6 +124,7 @@ int main(void)
 	char **argv;
 	char **path_list;
 	int status = 0;
+	size_t i;
 
 	path_list = create_env_list("PATH", environ);
 	while (1)
@@ -160,7 +161,12 @@ int main(void)
 		}
 		free(argv);
 	}
-	free(path_list);
+	if (path_list)
+	{
+		for (i = 0; path_list[i]; i++)
+			free(path_list[i]);
+		free(path_list);
+	}
 	free(input_line);
 	if (status == -1)
 	{

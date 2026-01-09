@@ -11,15 +11,18 @@ char *_getenv_var(char *name, char **environ)
 	int i = 0;
 	int len = 0;
 
+	if (!name || !environ)
+		return (NULL);
+
 	len = strlen(name);
 
-	while (environ[i])
+	for (i = 0; environ[i]; i++)
 	{
-		if (strncmp(name, environ[i], len) == 0)
+		if (strncmp(name, environ[i], len) == 0 &&
+			 environ[i][len] == '=')
 		{
-			return (environ[i]);
+			return (environ[i] + len + 1);
 		}
-		i++;
 	}
 	return (NULL);
 }
@@ -33,15 +36,18 @@ char *_getenv_var(char *name, char **environ)
 size_t get_num_paths(char *env)
 {
 	size_t j = 0;
-	size_t i = 1; /* minimum # paths will be 1 */
+	size_t i;
 
-	for (j = 0; env[j] != '\0'; j++)
+	if (!env || env[0] == '\0')
+		return (0);
+
+	j = 1;
+	for (i = 0; env[i]; i++)
 	{
-		if(env[j] == ':')
-			i++;
+		if (env[i] == ':')
+			j++;
 	}
-
-	return (++i);
+	return (j);
 }
 
 /**
@@ -53,27 +59,41 @@ size_t get_num_paths(char *env)
 char **create_env_list(char *name, char **environ)
 {
 	char *env;
+	char *env_copy;
 	char *token;
 	char **list;
 	size_t path_num = 0;
 	size_t i = 0;
 
 	env = _getenv_var(name, environ);
-	path_num = get_num_paths(env);
-	list = (char **)malloc(sizeof(char *) * (path_num));
 
+	if (!env || env[0] == '\0')
+	{
+		list = malloc(sizeof(char *));
+		if (!list)
+			return (NULL);
+		list[0] = NULL;
+		return (list);
+	}
+
+	path_num = get_num_paths(env);
+	list = (char **)malloc(sizeof(char *) * (path_num + 1));
+	if (!list)
+		return (NULL);
+	env_copy = strdup(env);
+	if (!env_copy)
+	{
+		free(list);
+		return(NULL);
+	}
 	token = strtok(env, ":");
 	while (token)
 	{
-		list[i++] = token;
+		list[i++] = strdup(token);
 		token = strtok(NULL, ":");
 	}
-	while(*list[0] != '=')
-	{
-		list[0]++;
-	}
-	list[0]++;
-	list[path_num - 1] = NULL;
+	list[i] = NULL;
+	free(env_copy);
 	return (list);
 
 }
