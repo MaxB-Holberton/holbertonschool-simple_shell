@@ -13,7 +13,7 @@ char *_getenv_var(char *name, char **environ)
 
 	len = strlen(name);
 
-	while (environ[i])
+	while (environ[i] != NULL)
 	{
 		if (strncmp(name, environ[i], len) == 0)
 		{

@@ -1,0 +1,46 @@
+.TH H_SHELL 1
+
+.SH NAME
+hsh \- runs the hsh shell
+
+.SH SYNOPSIS
+.B ./hsh
+to launch the shell in interactive mode
+
+.SH DESCRIPTION
+hsh is a shell-like program (similar to zsh or bash) that can run user commands, it will create a list from PATH and attempt to search those directories for the selected commands, alternatively supplying the path in the command i.e:
+.PP
+.nf
+.RS
+/bin/ls
+.RE
+.fi
+.PP
+
+Will have the shell search
+.B /bin/
+for
+.B ls
+
+.SH OPTIONS
+.B ./hsh
+can be run in non-interactive mode, which can be done by making the command like the example below:
+.PP
+.nf
+.RS
+echo "ls /var" | ./hsh
+.RE
+.fi
+.PP
+
+.SH BUGS
+certain commands like
+.B cd
+currently do not work
+
+.SH AUTHORS
+.nf
+Max Brook (12107@holbertonstudents.com)
+Matthew Wirski (12106@holbertonstudents.com)
+.fi
+

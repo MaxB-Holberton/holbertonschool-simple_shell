@@ -89,6 +89,7 @@ int check_path(char **argv, char **path_list)
 int pre_process(char **argv, char** path_list)
 {
 	unsigned int i = 0;
+
 	if (argv[0] == NULL)
 	{
 		return(0);
