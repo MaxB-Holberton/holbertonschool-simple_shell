@@ -22,10 +22,12 @@ int new_fork(char **argv)
 	{
 		execve(argv[0], argv, environ);
 		perror("ERROR - failed child");
-		return (-1);
+		exit(127);
 		/* should only return on failed call */
 	}
-	waitpid(new_process, &status, 0);
+	if (waitpid(new_process, &status, 0) == -1)
+		return (-1);
+
 	return (0);
 }
 
@@ -58,13 +60,13 @@ int check_path(char **argv, char **path_list)
 	for (i = 0; path_list[i] != NULL; i++)
 	{
 		/* malloc each path_list item w/ argv_0 */
-		len = strlen(path_list[i]) + argv_0_len;
+		len = strlen(path_list[i]) + argv_0_len + 1;
 		full_path = malloc(len);
 		if (!full_path)
 			return (1);
 
 		strcpy(full_path, path_list[i]);
-		strcat(full_path, "/\0");
+		strcat(full_path, "/");
 		strcat(full_path, argv[0]);
 		if (access(full_path, X_OK) == 0)
 		{
