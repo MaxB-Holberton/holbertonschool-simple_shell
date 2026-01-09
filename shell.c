@@ -180,5 +180,5 @@ int main(void)
 		perror("ERROR");
 		return (1);
 	}
-	return (0);
+	return (status);
 }
