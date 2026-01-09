@@ -58,7 +58,7 @@ int check_path(char **argv, char **path_list)
 		return (new_fork(argv));
 	}
 	if (!path_list || !path_list[0])
-		return (new_fork(argv));
+		return (1);
 
 	argv_0_len = strlen(argv[0]) + 2;
 	for (i = 0; path_list[i] != NULL; i++)
@@ -161,7 +161,10 @@ int main(void)
 		}
 		if (status == 1)
 		{
-			printf("ERROR: %s not found\n", argv[0]);
+			fprintf(stderr, "./hsh: 1: %s: not found\n", argv[0]);
+			status = 127;
+			free(argv);
+			break;
 		}
 		free(argv);
 	}
