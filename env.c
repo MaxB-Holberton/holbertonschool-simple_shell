@@ -3,6 +3,7 @@
 /**
  * _getenv_var - get the selected enviroment
  * @name: the name of the env variable to get
+ * @environ: the enviroment
  *
  * Return: the env variable or NULL
  */
@@ -52,6 +53,7 @@ size_t get_num_paths(char *env)
 /**
  * create_env_list - create a list from the PATH enviroment variables
  * @name: the name to create a list from
+ * @environ: the enviroment variable
  *
  * Return: pointer to the list
  */
@@ -83,7 +85,7 @@ char **create_env_list(char *name, char **environ)
 	if (!env_copy)
 	{
 		free(list);
-		return(NULL);
+		return (NULL);
 	}
 	token = strtok(env, ":");
 	while (token)

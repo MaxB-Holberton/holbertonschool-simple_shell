@@ -3,7 +3,7 @@
 /**
  * trim_string - removes excess spaces, tabs and newlines from a string
  * @input: the input to clean up
- * @len: the length of the input, used to ensure '\0' is included
+ * @end: the length of the input, used to ensure '\0' is included
  *
  * Return: pointer to trimmed string
  */
@@ -61,7 +61,7 @@ size_t create_argc(char *input)
 
 	for (j = 0; input[j] != '\0'; j++)
 	{
-		if(input[j] == ' ')
+		if (input[j] == ' ')
 			i++;
 	}
 
